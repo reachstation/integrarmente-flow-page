@@ -43,14 +43,16 @@ const FinalCTA = () => {
             </Button>
           </Link>
           
-          <Button 
-            size="lg" 
-            variant="outline"
-            className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-700 px-12 py-6 text-xl rounded-full transition-all duration-300 font-medium"
-          >
-            Comece gratuitamente agora mesmo
-            <ArrowRight className="w-6 h-6 ml-3" />
-          </Button>
+          <Link to="/onboarding">
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-700 px-12 py-6 text-xl rounded-full transition-all duration-300 font-medium"
+            >
+              Comece gratuitamente agora mesmo
+              <ArrowRight className="w-6 h-6 ml-3" />
+            </Button>
+          </Link>
         </div>
         
         <p className="mt-8 text-lg opacity-80">
