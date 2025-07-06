@@ -2,6 +2,7 @@
 import React from 'react';
 import { Shield, Lightbulb, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 const FinalCTA = () => {
   return (
@@ -31,13 +32,26 @@ const FinalCTA = () => {
           </h2>
         </div>
         
-        <Button 
-          size="lg" 
-          className="bg-white text-blue-700 hover:bg-gray-100 px-12 py-6 text-2xl rounded-full shadow-2xl hover:shadow-white/25 transform hover:scale-105 transition-all duration-300 font-bold"
-        >
-          Comece gratuitamente agora mesmo
-          <ArrowRight className="w-6 h-6 ml-3" />
-        </Button>
+        <div className="space-y-4">
+          <Link to="/session">
+            <Button 
+              size="lg" 
+              className="bg-white text-blue-700 hover:bg-gray-100 px-12 py-6 text-2xl rounded-full shadow-2xl hover:shadow-white/25 transform hover:scale-105 transition-all duration-300 font-bold"
+            >
+              Iniciar minha primeira sessão
+              <ArrowRight className="w-6 h-6 ml-3" />
+            </Button>
+          </Link>
+          
+          <Button 
+            size="lg" 
+            variant="outline"
+            className="bg-transparent border-2 border-white text-white hover:bg-white hover:text-blue-700 px-12 py-6 text-xl rounded-full transition-all duration-300 font-medium"
+          >
+            Comece gratuitamente agora mesmo
+            <ArrowRight className="w-6 h-6 ml-3" />
+          </Button>
+        </div>
         
         <p className="mt-8 text-lg opacity-80">
           Sem cartão de crédito. Sem compromisso. Só você e seu bem-estar.
