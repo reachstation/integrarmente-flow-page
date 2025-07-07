@@ -12,15 +12,17 @@ const Hero = () => {
       <div className="absolute top-20 left-10 w-20 h-20 bg-blue-200/30 rounded-full blur-xl animate-pulse"></div>
       <div className="absolute bottom-20 right-10 w-32 h-32 bg-green-200/30 rounded-full blur-xl animate-pulse delay-1000"></div>
       
-      {/* Login Button - Top Right */}
-      <div className="absolute top-8 right-8">
-        <Button 
-          variant="ghost"
-          className="border border-blue-200 text-blue-700 hover:bg-blue-50 px-6 py-2 rounded-full"
-        >
-          <LogIn className="w-4 h-4 mr-2" />
-          Entrar
-        </Button>
+      {/* Fixed Login Button - Top Right */}
+      <div className="fixed top-6 right-6 z-50">
+        <Link to="/cadastro">
+          <Button 
+            variant="ghost"
+            className="border border-blue-300 text-blue-700 hover:bg-blue-50 px-4 py-2 rounded-sm bg-white/80 backdrop-blur-sm shadow-sm"
+          >
+            <LogIn className="w-4 h-4 mr-2" />
+            Entrar
+          </Button>
+        </Link>
       </div>
       
       <div className="relative max-w-6xl mx-auto text-center">
@@ -58,15 +60,27 @@ const Hero = () => {
           </div>
         </div>
         
-        {/* CTA Button */}
-        <Link to="/onboarding">
-          <Button 
-            size="lg" 
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-12 py-6 text-xl rounded-full shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105 transition-all duration-300"
-          >
-            Comece sua jornada gratuitamente
-          </Button>
-        </Link>
+        {/* CTA Buttons */}
+        <div className="space-y-4">
+          <Link to="/onboarding">
+            <Button 
+              size="lg" 
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-12 py-6 text-xl rounded-full shadow-2xl hover:shadow-blue-500/25 transform hover:scale-105 transition-all duration-300 mr-4"
+            >
+              Comece sua jornada gratuitamente
+            </Button>
+          </Link>
+          
+          <Link to="/teste-gratuito">
+            <Button 
+              size="lg" 
+              variant="outline"
+              className="border-2 border-blue-600 text-blue-700 hover:bg-blue-50 px-8 py-6 text-lg rounded-full transition-all duration-300"
+            >
+              Teste gratuito de 3 minutos
+            </Button>
+          </Link>
+        </div>
         
         {/* Trust indicators */}
         <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8 max-w-3xl mx-auto">
