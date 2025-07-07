@@ -15,6 +15,7 @@ import TasksPage from "./pages/TasksPage";
 import UserAreaPage from "./pages/UserAreaPage";
 import CalendarPage from "./pages/CalendarPage";
 import NotesPage from "./pages/NotesPage";
+import AccountDataPage from "./pages/AccountDataPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/tasks" element={<TasksPage />} />
           <Route path="/calendario" element={<CalendarPage />} />
           <Route path="/notas" element={<NotesPage />} />
+          <Route path="/dados" element={<AccountDataPage />} />
           {/* Legacy routes for backward compatibility */}
           <Route path="/old-session" element={<SessionPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
