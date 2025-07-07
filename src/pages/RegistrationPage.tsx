@@ -1,46 +1,43 @@
 
 import React, { useState } from 'react';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Mic, MessageSquare } from 'lucide-react';
-
-interface FormData {
-  name: string;
-  email: string;
-  password: string;
-  anxiety: number;
-  stress: number;
-  energy: number;
-  mostFrequentEmotion: string;
-  goals: string[];
-  otherGoal: string;
-  communicationPreference: 'voice' | 'text';
-}
 
 const RegistrationPage = () => {
-  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    anxiety: 5,
-    stress: 5,
-    energy: 5,
-    mostFrequentEmotion: '',
-    goals: [],
-    otherGoal: '',
-    communicationPreference: 'text'
+    anxiety: [5],
+    stress: [5],
+    energy: [5],
+    emotion: '',
+    goals: [] as string[],
+    customGoal: '',
+    preference: ''
   });
+  const navigate = useNavigate();
 
-  const totalSteps = 4;
+  const handleNext = () => {
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      // Final step - redirect to user area
+      navigate('/usuario');
+    }
+  };
 
-  const handleInputChange = (field: keyof FormData, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
   };
 
   const handleGoalToggle = (goal: string) => {
@@ -52,69 +49,42 @@ const RegistrationPage = () => {
     }));
   };
 
-  const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      // Complete registration
-      navigate('/session');
-    }
-  };
-
-  const prevStep = () => {
-    if (currentStep > 1) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const isStepValid = () => {
-    switch (currentStep) {
-      case 1:
-        return formData.name && formData.email && formData.password;
-      case 2:
-        return formData.mostFrequentEmotion;
-      case 3:
-        return formData.goals.length > 0;
-      case 4:
-        return formData.communicationPreference;
-      default:
-        return false;
-    }
-  };
-
   const renderStep = () => {
     switch (currentStep) {
       case 1:
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
-              <input
+              <Label htmlFor="name">Nome</Label>
+              <Input
+                id="name"
                 type="text"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Seu nome completo"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                className="mt-2"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
-              <input
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
                 type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="seu@email.com"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                className="mt-2"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Senha</label>
-              <input
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
                 type="password"
+                placeholder="Crie uma senha segura"
                 value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Sua senha"
+                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                className="mt-2"
               />
             </div>
           </div>
@@ -123,77 +93,55 @@ const RegistrationPage = () => {
       case 2:
         return (
           <div className="space-y-8">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-4">
-                Nível de ansiedade: {formData.anxiety}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="10"
+            <div className="space-y-4">
+              <Label>Nível de Ansiedade (0-10)</Label>
+              <Slider
                 value={formData.anxiety}
-                onChange={(e) => handleInputChange('anxiety', Number(e.target.value))}
-                className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer"
+                onValueChange={(value) => setFormData(prev => ({ ...prev, anxiety: value }))}
+                max={10}
+                step={1}
+                className="w-full"
               />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>0</span>
-                <span>10</span>
-              </div>
+              <p className="text-sm text-gray-600">Atual: {formData.anxiety[0]}</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-4">
-                Nível de estresse: {formData.stress}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="10"
+            <div className="space-y-4">
+              <Label>Nível de Estresse (0-10)</Label>
+              <Slider
                 value={formData.stress}
-                onChange={(e) => handleInputChange('stress', Number(e.target.value))}
-                className="w-full h-2 bg-red-100 rounded-lg appearance-none cursor-pointer"
+                onValueChange={(value) => setFormData(prev => ({ ...prev, stress: value }))}
+                max={10}
+                step={1}
+                className="w-full"
               />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>0</span>
-                <span>10</span>
-              </div>
+              <p className="text-sm text-gray-600">Atual: {formData.stress[0]}</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-4">
-                Nível de energia: {formData.energy}
-              </label>
-              <input
-                type="range"
-                min="0"
-                max="10"
+            <div className="space-y-4">
+              <Label>Nível de Energia (0-10)</Label>
+              <Slider
                 value={formData.energy}
-                onChange={(e) => handleInputChange('energy', Number(e.target.value))}
-                className="w-full h-2 bg-green-100 rounded-lg appearance-none cursor-pointer"
+                onValueChange={(value) => setFormData(prev => ({ ...prev, energy: value }))}
+                max={10}
+                step={1}
+                className="w-full"
               />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>0</span>
-                <span>10</span>
-              </div>
+              <p className="text-sm text-gray-600">Atual: {formData.energy[0]}</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-4">
-                Qual destas emoções tem sido mais frequente?
-              </label>
-              <div className="space-y-3">
+            <div className="space-y-4">
+              <Label>Qual destas emoções tem sido mais frequente?</Label>
+              <div className="grid grid-cols-2 gap-3">
                 {['Tristeza', 'Raiva', 'Cansaço', 'Medo', 'Outra'].map((emotion) => (
-                  <label key={emotion} className="flex items-center">
-                    <input
-                      type="radio"
-                      name="emotion"
-                      value={emotion}
-                      checked={formData.mostFrequentEmotion === emotion}
-                      onChange={(e) => handleInputChange('mostFrequentEmotion', e.target.value)}
-                      className="mr-3 text-blue-600"
-                    />
-                    <span className="text-gray-700">{emotion}</span>
-                  </label>
+                  <Button
+                    key={emotion}
+                    variant={formData.emotion === emotion ? "default" : "outline"}
+                    onClick={() => setFormData(prev => ({ ...prev, emotion }))}
+                    className="justify-start"
+                  >
+                    {formData.emotion === emotion && <Check className="w-4 h-4 mr-2" />}
+                    {emotion}
+                  </Button>
                 ))}
               </div>
             </div>
@@ -203,44 +151,39 @@ const RegistrationPage = () => {
       case 3:
         return (
           <div className="space-y-6">
-            <p className="text-gray-600 text-center mb-6">
-              Selecione as metas que mais fazem sentido para você agora:
-            </p>
+            <div>
+              <Label className="text-base font-medium">
+                Selecione as metas que mais fazem sentido para você agora:
+              </Label>
+            </div>
             <div className="space-y-4">
-              {[
-                'Reduzir ansiedade',
-                'Melhorar autoestima',
-                'Ter mais controle emocional',
-                'Melhorar sono'
-              ].map((goal) => (
-                <label key={goal} className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="checkbox"
+              {['Reduzir ansiedade', 'Melhorar autoestima', 'Ter mais controle emocional', 'Melhorar sono'].map((goal) => (
+                <div key={goal} className="flex items-center space-x-3">
+                  <Checkbox
+                    id={goal}
                     checked={formData.goals.includes(goal)}
-                    onChange={() => handleGoalToggle(goal)}
-                    className="mr-4 text-blue-600 rounded"
+                    onCheckedChange={() => handleGoalToggle(goal)}
                   />
-                  <span className="text-gray-700 font-medium">{goal}</span>
-                </label>
-              ))}
-              <label className="flex items-center p-4 border border-gray-200 rounded-xl hover:bg-gray-50">
-                <input
-                  type="checkbox"
-                  checked={formData.goals.includes('Outro')}
-                  onChange={() => handleGoalToggle('Outro')}
-                  className="mr-4 text-blue-600 rounded"
-                />
-                <div className="flex-1">
-                  <span className="text-gray-700 font-medium">Outro:</span>
-                  <input
-                    type="text"
-                    value={formData.otherGoal}
-                    onChange={(e) => handleInputChange('otherGoal', e.target.value)}
-                    className="ml-2 flex-1 border-0 focus:ring-0 focus:outline-none"
-                    placeholder="Descreva sua meta..."
-                  />
+                  <Label htmlFor={goal} className="text-sm font-normal cursor-pointer">
+                    {goal}
+                  </Label>
                 </div>
-              </label>
+              ))}
+              <div className="flex items-center space-x-3">
+                <Checkbox
+                  id="custom"
+                  checked={formData.goals.includes('custom')}
+                  onCheckedChange={() => handleGoalToggle('custom')}
+                />
+                <Label htmlFor="custom" className="text-sm font-normal">Outro:</Label>
+                <Input
+                  placeholder="Digite sua meta personalizada"
+                  value={formData.customGoal}
+                  onChange={(e) => setFormData(prev => ({ ...prev, customGoal: e.target.value }))}
+                  className="flex-1"
+                  disabled={!formData.goals.includes('custom')}
+                />
+              </div>
             </div>
           </div>
         );
@@ -248,35 +191,37 @@ const RegistrationPage = () => {
       case 4:
         return (
           <div className="space-y-6">
-            <p className="text-gray-600 text-center mb-8">
-              Como você prefere se comunicar nas suas sessões?
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <button
-                onClick={() => handleInputChange('communicationPreference', 'voice')}
-                className={`p-8 border-2 rounded-2xl text-center transition-all ${
-                  formData.communicationPreference === 'voice'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+            <div>
+              <Label className="text-base font-medium">
+                Como você prefere se comunicar nas suas sessões?
+              </Label>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card 
+                className={`cursor-pointer transition-all ${formData.preference === 'voice' ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:shadow-md'}`}
+                onClick={() => setFormData(prev => ({ ...prev, preference: 'voice' }))}
               >
-                <Mic className="w-12 h-12 mx-auto mb-4 text-blue-600" />
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Por voz</h3>
-                <p className="text-gray-600 text-sm">Conversas naturais, como uma ligação</p>
-              </button>
+                <CardContent className="flex flex-col items-center p-6">
+                  <div className="text-4xl mb-4">🎙️</div>
+                  <CardTitle className="text-lg mb-2">Por voz</CardTitle>
+                  <CardDescription className="text-center">
+                    Converse naturalmente falando com a IA
+                  </CardDescription>
+                </CardContent>
+              </Card>
 
-              <button
-                onClick={() => handleInputChange('communicationPreference', 'text')}
-                className={`p-8 border-2 rounded-2xl text-center transition-all ${
-                  formData.communicationPreference === 'text'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+              <Card 
+                className={`cursor-pointer transition-all ${formData.preference === 'text' ? 'ring-2 ring-blue-500 bg-blue-50' : 'hover:shadow-md'}`}
+                onClick={() => setFormData(prev => ({ ...prev, preference: 'text' }))}
               >
-                <MessageSquare className="w-12 h-12 mx-auto mb-4 text-blue-600" />
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Por texto</h3>
-                <p className="text-gray-600 text-sm">Mensagens escritas, no seu ritmo</p>
-              </button>
+                <CardContent className="flex flex-col items-center p-6">
+                  <div className="text-4xl mb-4">💬</div>
+                  <CardTitle className="text-lg mb-2">Por texto</CardTitle>
+                  <CardDescription className="text-center">
+                    Digite suas mensagens no chat
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </div>
           </div>
         );
@@ -286,80 +231,105 @@ const RegistrationPage = () => {
     }
   };
 
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 1: return 'Cadastro';
+      case 2: return 'Como você está se sentindo?';
+      case 3: return 'Suas metas emocionais';
+      case 4: return 'Preferência de Sessão';
+      default: return '';
+    }
+  };
+
+  const getButtonText = () => {
+    switch (currentStep) {
+      case 1: return 'Começar agora';
+      case 4: return 'Ir para minha área pessoal';
+      default: return 'Próximo';
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-8">
-          <Link to="/">
-            <Button variant="ghost" className="text-gray-600 hover:text-gray-800 mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Voltar para início
-            </Button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center px-4">
+      <div className="max-w-2xl w-full">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar para página inicial
           </Link>
-          
-          {/* Progress indicator */}
-          <div className="flex items-center justify-center mb-8">
-            {Array.from({ length: totalSteps }, (_, i) => (
-              <React.Fragment key={i}>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Bem-vindo ao IntegrarMente</h1>
+          <p className="text-gray-600">Vamos personalizar sua jornada terapêutica</p>
+        </div>
+
+        {/* Progress indicator */}
+        <div className="flex justify-center mb-8">
+          <div className="flex items-center space-x-2">
+            {[1, 2, 3, 4].map((step) => (
+              <div key={step} className="flex items-center">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    i + 1 <= currentStep
+                    step === currentStep
                       ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-500'
+                      : step < currentStep
+                      ? 'bg-green-500 text-white'
+                      : 'bg-gray-200 text-gray-600'
                   }`}
                 >
-                  {i + 1}
+                  {step < currentStep ? <Check className="w-4 h-4" /> : step}
                 </div>
-                {i < totalSteps - 1 && (
+                {step < 4 && (
                   <div
-                    className={`w-16 h-1 mx-2 rounded ${
-                      i + 1 < currentStep ? 'bg-blue-600' : 'bg-gray-200'
+                    className={`w-16 h-1 mx-2 ${
+                      step < currentStep ? 'bg-green-500' : 'bg-gray-200'
                     }`}
                   />
                 )}
-              </React.Fragment>
+              </div>
             ))}
           </div>
         </div>
 
-        <Card className="shadow-xl border-0">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-gray-800">
-              {currentStep === 1 && 'Cadastro'}
-              {currentStep === 2 && 'Como você está se sentindo?'}
-              {currentStep === 3 && 'Suas metas emocionais'}
-              {currentStep === 4 && 'Preferência de Sessão'}
-            </CardTitle>
+        {/* Form Card */}
+        <Card className="shadow-xl">
+          <CardHeader>
+            <CardTitle className="text-xl">{getStepTitle()}</CardTitle>
+            <CardDescription>
+              Etapa {currentStep} de 4
+            </CardDescription>
           </CardHeader>
-          <CardContent className="p-8">
+          <CardContent className="space-y-6">
             {renderStep()}
 
-            <div className="flex justify-between mt-8 pt-6 border-t">
-              {currentStep > 1 && (
-                <Button onClick={prevStep} variant="outline">
-                  Anterior
-                </Button>
-              )}
+            {/* Navigation buttons */}
+            <div className="flex justify-between pt-6">
               <Button
-                onClick={nextStep}
-                disabled={!isStepValid()}
-                className="ml-auto bg-blue-600 hover:bg-blue-700"
+                variant="outline"
+                onClick={handlePrevious}
+                disabled={currentStep === 1}
               >
-                {currentStep === totalSteps ? 'Ir para minha primeira sessão' : 'Próximo'}
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Anterior
+              </Button>
+              <Button onClick={handleNext}>
+                {getButtonText()}
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
-
-            {currentStep === totalSteps && (
-              <div className="mt-6 p-4 bg-green-50 rounded-xl text-center">
-                <p className="text-green-800 font-medium">
-                  Tudo pronto! Estamos ao seu lado para começar sua evolução emocional. 
-                  Sua primeira sessão já está disponível.
-                </p>
-              </div>
-            )}
           </CardContent>
         </Card>
+
+        {/* Final message for step 4 */}
+        {currentStep === 4 && (
+          <Card className="mt-6 bg-green-50 border-green-200">
+            <CardContent className="pt-6">
+              <p className="text-center text-green-800 font-medium">
+                Tudo pronto! Estamos ao seu lado para começar sua evolução emocional. 
+                Sua primeira sessão já está disponível.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
