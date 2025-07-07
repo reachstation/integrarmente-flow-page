@@ -14,6 +14,7 @@ import {
   Check,
   X
 } from 'lucide-react';
+import GlobalNavigation from '@/components/navigation/GlobalNavigation';
 
 interface Task {
   id: number;
@@ -89,15 +90,18 @@ const TasksPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-4xl mx-auto px-6 py-4">
+      <GlobalNavigation />
+      
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Header */}
+        <div className="mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link to="/dashboard">
+              <Link to="/usuario">
                 <Button variant="ghost" className="text-gray-600 hover:text-gray-800">
                   <ArrowLeft className="w-4 h-4 mr-2" />
-                  Voltar ao painel
+                  Voltar ao meu espaço
                 </Button>
               </Link>
               <h1 className="text-2xl font-bold text-gray-800">Minhas Tarefas</h1>
@@ -107,10 +111,7 @@ const TasksPage = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="max-w-4xl mx-auto px-6 py-8">
         {/* Progress Summary */}
         <Card className="mb-8">
           <CardContent className="p-6">
@@ -188,7 +189,7 @@ const TasksPage = () => {
         </div>
 
         {/* Floating Action Button */}
-        <Link to="/session">
+        <Link to="/sessao">
           <Button 
             className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all"
           >

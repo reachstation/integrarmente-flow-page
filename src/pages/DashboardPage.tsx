@@ -12,52 +12,53 @@ import {
   Settings, 
   LogOut,
   TrendingUp,
-  Clock
+  Clock,
+  ArrowLeft
 } from 'lucide-react';
+import GlobalNavigation from '@/components/navigation/GlobalNavigation';
 
 const DashboardPage = () => {
   const userName = "Ana"; // This would come from user context/auth
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-800">
-              Bem-vindo de volta, {userName}
-            </h1>
-            <div className="flex items-center gap-4">
-              <Link to="/session">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                  <Play className="w-4 h-4 mr-2" />
-                  Iniciar nova sessão
-                </Button>
-              </Link>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm">
-                  <Settings className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <LogOut className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
+      <GlobalNavigation />
+      
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Header with return link */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800 mb-2">
+                Bem-vindo de volta, {userName}
+              </h1>
+              <Link 
+                to="/usuario" 
+                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-700 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-1" />
+                Voltar para meu espaço pessoal
+              </Link>
+            </div>
+            <Link to="/sessao">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                <Play className="w-4 h-4 mr-2" />
+                Iniciar nova sessão
+              </Button>
+            </Link>
+          </div>
+        </div>
+
         {/* Quick Actions */}
         <div className="flex gap-4 mb-8">
-          <Link to="/session" className="flex-1">
+          <Link to="/sessao" className="flex-1">
             <Button className="w-full h-16 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white text-lg">
               <Play className="w-6 h-6 mr-3" />
               Iniciar nova sessão
             </Button>
           </Link>
-          <Link to="/tasks" className="flex-1">
+          <Link to="/tarefas" className="flex-1">
             <Button variant="outline" className="w-full h-16 border-2 border-blue-200 text-blue-700 hover:bg-blue-50 text-lg">
               <CheckSquare className="w-6 h-6 mr-3" />
               Ver todas tarefas

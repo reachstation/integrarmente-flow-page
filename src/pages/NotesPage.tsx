@@ -1,176 +1,253 @@
-
 import React, { useState } from 'react';
-import { FileText, Search, Download, Calendar, Tag, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Link } from 'react-router-dom';
+import { 
+  Search, 
+  Calendar, 
+  MessageSquare, 
+  FileText, 
+  Download,
+  ArrowLeft,
+  Clock,
+  Filter
+} from 'lucide-react';
+import GlobalNavigation from '@/components/navigation/GlobalNavigation';
+
+interface SessionNote {
+  id: number;
+  date: Date;
+  duration: number;
+  emotion: string;
+  topic: string;
+  summary: string;
+  fullNotes: string;
+  type: 'session' | 'task';
+}
 
 const NotesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [filterType, setFilterType] = useState('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<SessionNote | null>(null);
 
-  // Mock data for sessions
-  const sessions = [
+  // Mock data for session notes
+  const [sessionNotes, setSessionNotes] = useState<SessionNote[]>([
     {
       id: 1,
-      date: '2024-01-15',
-      time: '14:30',
-      emotion: 'Ansiedade',
-      topic: 'Técnicas de respiração e mindfulness',
-      summary: 'Sessão focada em exercícios de respiração para controle da ansiedade. Praticamos a técnica 4-7-8 e discutimos estratégias para momentos de crise.',
-      notes: 'A paciente demonstrou boa receptividade às técnicas apresentadas. Relatou que já havia tentado meditação antes, mas sem orientação adequada. Mostrou-se motivada para praticar diariamente.'
+      date: new Date(2024, 0, 15),
+      duration: 30,
+      emotion: 'Calmo',
+      topic: 'Estratégias de enfrentamento',
+      summary: 'Discussão sobre técnicas de respiração e mindfulness para lidar com a ansiedade.',
+      fullNotes: 'Durante a sessão, exploramos diferentes técnicas de respiração e mindfulness para ajudar a lidar com a ansiedade em situações de estresse. Foi recomendado praticar esses exercícios diariamente.',
+      type: 'session'
     },
     {
       id: 2,
-      date: '2024-01-10',
-      time: '15:00',
-      emotion: 'Estresse',
-      topic: 'Reestruturação cognitiva',
-      summary: 'Trabalhamos identificação e questionamento de pensamentos automáticos negativos relacionados ao trabalho.',
-      notes: 'Identificamos padrões de pensamento catastrófico relacionados a prazos e avaliações profissionais. Aplicamos a técnica de questionamento socrático.'
+      date: new Date(2024, 0, 10),
+      duration: 0,
+      emotion: 'Neutro',
+      topic: 'Registro de pensamentos',
+      summary: 'Preenchimento do registro de pensamentos ABC para identificar padrões negativos.',
+      fullNotes: 'O registro de pensamentos ABC foi preenchido com o objetivo de identificar padrões de pensamento negativos e distorções cognitivas. Foram identificadas algumas situações em que o paciente tende a ter pensamentos automáticos negativos.',
+      type: 'task'
     },
     {
       id: 3,
-      date: '2024-01-05',
-      time: '16:00',
-      emotion: 'Tristeza',
-      topic: 'Estabelecimento de metas e rotina',
-      summary: 'Definimos objetivos terapêuticos e criamos uma rotina diária estruturada para melhorar o humor.',
-      notes: 'Paciente estabeleceu 3 metas principais: melhorar qualidade do sono, retomar atividades prazerosas e fortalecer vínculos sociais.'
-    }
-  ];
+      date: new Date(2023, 11, 28),
+      duration: 25,
+      emotion: 'Motivado',
+      topic: 'Definição de metas',
+      summary: 'Definição de metas realistas e alcançáveis para o próximo mês.',
+      fullNotes: 'A sessão foi focada na definição de metas realistas e alcançáveis para o próximo mês. O paciente se mostrou motivado e engajado no processo.',
+      type: 'session'
+    },
+  ]);
 
-  const filteredSessions = sessions.filter(session =>
-    session.topic.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    session.emotion.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    session.summary.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredNotes = sessionNotes.filter(note => {
+    const searchTermLower = searchTerm.toLowerCase();
+    const topicLower = note.topic.toLowerCase();
+    const summaryLower = note.summary.toLowerCase();
 
-  const getEmotionColor = (emotion: string) => {
-    const colors: { [key: string]: string } = {
-      'Ansiedade': 'bg-yellow-100 text-yellow-800',
-      'Estresse': 'bg-red-100 text-red-800',
-      'Tristeza': 'bg-blue-100 text-blue-800',
-      'Raiva': 'bg-orange-100 text-orange-800',
-      'Medo': 'bg-purple-100 text-purple-800'
-    };
-    return colors[emotion] || 'bg-gray-100 text-gray-800';
+    const matchesSearch = topicLower.includes(searchTermLower) || summaryLower.includes(searchTermLower);
+    const matchesType = filterType === 'all' || note.type === filterType;
+
+    return matchesSearch && matchesType;
+  });
+
+  const openNoteModal = (note: SessionNote) => {
+    setSelectedNote(note);
+    setIsModalOpen(true);
+  };
+
+  const closeNoteModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const totalSessions = sessionNotes.filter(note => note.type === 'session').length;
+  const totalTasks = sessionNotes.filter(note => note.type === 'task').length;
+  const averageSessionDuration = sessionNotes.filter(note => note.type === 'session').reduce((acc, note) => acc + note.duration, 0) / totalSessions || 0;
+
+  const exportToPDF = () => {
+    alert('Exportar para PDF (implementação futura)');
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-blue-100 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Link to="/usuario">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Voltar
-              </Button>
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-              <FileText className="w-6 h-6 mr-3 text-blue-600" />
-              Minhas Sessões e Notas
-            </h1>
-          </div>
-          <Button variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Exportar PDF
-          </Button>
-        </div>
-      </header>
-
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Search Bar */}
-        <Card className="mb-8">
-          <CardContent className="pt-6">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Buscar por tema, emoção ou conteúdo das notas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+      <GlobalNavigation />
+      
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="flex items-center gap-4 mb-2">
+                <Link to="/usuario">
+                  <Button variant="ghost" className="text-gray-600 hover:text-gray-800">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Voltar ao meu espaço
+                  </Button>
+                </Link>
+                <h1 className="text-3xl font-bold text-gray-800 flex items-center">
+                  <FileText className="w-8 h-8 mr-3 text-blue-600" />
+                  Minhas Sessões e Notas
+                </h1>
+              </div>
+              <p className="text-gray-600">Histórico completo das suas sessões e anotações terapêuticas</p>
             </div>
-          </CardContent>
-        </Card>
+            <Button 
+              onClick={exportToPDF}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Exportar PDF
+            </Button>
+          </div>
+        </div>
+
+        {/* Search and Filters */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="md:col-span-2">
+            <Input
+              type="search"
+              placeholder="Buscar por tópico ou resumo..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-gray-50 border-gray-200 focus:border-blue-300"
+            />
+          </div>
+          <div>
+            <Button variant="outline" className="w-full justify-start gap-2">
+              <Filter className="w-4 h-4" />
+              Filtrar por
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="bg-blue-50 hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Sessões Totais</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold text-blue-700">{totalSessions}</div>
+              <p className="text-sm text-gray-600">Sessões terapêuticas realizadas</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-green-50 hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Tarefas Concluídas</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold text-green-700">{totalTasks}</div>
+              <p className="text-sm text-gray-600">Tarefas e exercícios finalizados</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-purple-50 hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold">Tempo em Sessões</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-4xl font-bold text-purple-700">{averageSessionDuration}m</div>
+              <p className="text-sm text-gray-600">Tempo médio por sessão</p>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Sessions List */}
-        <div className="space-y-6">
-          {filteredSessions.map((session) => (
-            <Card key={session.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex justify-between items-start">
+        <div className="space-y-4">
+          {filteredNotes.map((note) => (
+            <Card key={note.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-lg">{session.topic}</CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center">
-                        <Calendar className="w-4 h-4 mr-1" />
-                        {new Date(session.date).toLocaleDateString('pt-BR')} às {session.time}
-                      </span>
-                    </CardDescription>
-                  </div>
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEmotionColor(session.emotion)}`}>
-                    <Tag className="w-3 h-3 mr-1 inline" />
-                    {session.emotion}
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700 mb-4">{session.summary}</p>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      Ver Notas Completas
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-                    <DialogHeader>
-                      <DialogTitle>{session.topic}</DialogTitle>
-                      <DialogDescription>
-                        Sessão de {new Date(session.date).toLocaleDateString('pt-BR')} às {session.time}
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <h4 className="font-medium mb-2">Resumo da Sessão</h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">{session.summary}</p>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-2">Notas Detalhadas</h4>
-                        <p className="text-gray-700 text-sm leading-relaxed">{session.notes}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">Emoção principal:</span>
-                        <span className={`px-2 py-1 rounded text-xs ${getEmotionColor(session.emotion)}`}>
-                          {session.emotion}
-                        </span>
-                      </div>
+                    <h3 className="text-lg font-semibold text-gray-800">{note.topic}</h3>
+                    <p className="text-gray-600 text-sm mt-1">{note.summary}</p>
+                    <div className="flex items-center text-gray-500 text-xs mt-2">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      {note.date.toLocaleDateString()}
+                      {note.type === 'session' && (
+                        <>
+                          <span className="mx-2">•</span>
+                          <Clock className="w-3 h-3 mr-1" />
+                          {note.duration} minutos
+                        </>
+                      )}
                     </div>
-                  </DialogContent>
-                </Dialog>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={() => openNoteModal(note)}>
+                    Ver Detalhes
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {filteredSessions.length === 0 && (
-          <Card>
-            <CardContent className="text-center py-12">
-              <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">
-                {searchTerm ? 'Nenhuma sessão encontrada com os termos pesquisados.' : 'Nenhuma sessão registrada ainda.'}
-              </p>
-              <Link to="/sessao" className="inline-block mt-4">
-                <Button>Iniciar Primera Sessão</Button>
-              </Link>
-            </CardContent>
-          </Card>
-        )}
+        {/* Session Detail Modal */}
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{selectedNote?.topic}</DialogTitle>
+            </DialogHeader>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Data:</p>
+                <p className="text-gray-600">{selectedNote?.date.toLocaleDateString()}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700">Tipo:</p>
+                <Badge className="bg-blue-100 text-blue-700">{selectedNote?.type === 'session' ? 'Sessão' : 'Tarefa'}</Badge>
+              </div>
+              {selectedNote?.type === 'session' && (
+                <div>
+                  <p className="text-sm font-medium text-gray-700">Duração:</p>
+                  <p className="text-gray-600">{selectedNote?.duration} minutos</p>
+                </div>
+              )}
+              <div>
+                <p className="text-sm font-medium text-gray-700">Emoção:</p>
+                <p className="text-gray-600">{selectedNote?.emotion}</p>
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-medium text-gray-700">Resumo:</p>
+              <p className="text-gray-600">{selectedNote?.summary}</p>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-medium text-gray-700">Anotações Completas:</p>
+              <p className="text-gray-600 whitespace-pre-line">{selectedNote?.fullNotes}</p>
+            </div>
+            <Button onClick={closeNoteModal} className="mt-6">Fechar</Button>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
