@@ -64,61 +64,97 @@ const SessionPage = () => {
     const currentMessageText = inputText;
     setInputText('');
 
+    console.log('=== INICIANDO WEBHOOK ===');
+    console.log('URL do Webhook:', webhookUrl);
+    console.log('Mensagem do usuário:', currentMessageText);
+
     try {
-      // Comprehensive payload for n8n webhook
+      // Payload otimizado com dados essenciais
       const payload = {
-        userId: userId,
-        sessionId: sessionId,
-        sessionStartTime: sessionStartTime,
-        currentMessage: currentMessageText,
-        messageCount: messages.length + 1,
-        timestamp: new Date().toISOString(),
-        userAgent: navigator.userAgent,
-        history: messages.map(msg => ({ 
-          text: msg.text, 
-          isUser: msg.isUser,
-          timestamp: msg.timestamp.toISOString()
-        })),
-        sessionContext: {
-          totalMessages: messages.length + 1,
-          sessionDuration: Date.now() - new Date(sessionStartTime).getTime(),
-          pageUrl: window.location.href
+        event: 'message_sent',
+        data: {
+          userId: userId,
+          sessionId: sessionId,
+          sessionStartTime: sessionStartTime,
+          currentMessage: currentMessageText,
+          messageCount: messages.length + 1,
+          timestamp: new Date().toISOString(),
+          userAgent: navigator.userAgent,
+          history: messages.map(msg => ({ 
+            text: msg.text, 
+            isUser: msg.isUser,
+            timestamp: msg.timestamp.toISOString()
+          })),
+          sessionContext: {
+            totalMessages: messages.length + 1,
+            sessionDuration: Date.now() - new Date(sessionStartTime).getTime(),
+            pageUrl: window.location.href,
+            referrer: document.referrer
+          }
         }
       };
       
-      console.log('Enviando payload para n8n:', JSON.stringify(payload, null, 2));
+      console.log('=== PAYLOAD SENDO ENVIADO ===');
+      console.log(JSON.stringify(payload, null, 2));
       
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Accept': 'application/json, text/plain, */*'
+          'Accept': 'application/json, text/plain, */*',
+          'User-Agent': navigator.userAgent
         },
         body: JSON.stringify(payload),
       });
       
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
+      console.log('=== RESPOSTA DO WEBHOOK ===');
+      console.log('Status:', response.status);
+      console.log('Status Text:', response.statusText);
+      console.log('Headers:', Object.fromEntries(response.headers.entries()));
       
-      let aiText = 'Desculpe, houve um erro ao obter resposta.';
+      let aiText = 'Desculpe, houve um erro ao obter resposta do agente.';
       
       if (response.ok) {
         const contentType = response.headers.get('content-type');
-        console.log('Content type:', contentType);
+        console.log('Content-Type:', contentType);
         
-        if (contentType && contentType.includes('application/json')) {
-          const responseData = await response.json();
-          console.log('JSON response:', responseData);
-          aiText = responseData.message || responseData.text || responseData.response || JSON.stringify(responseData);
-        } else {
-          aiText = await response.text();
-          console.log('Text response:', aiText);
+        try {
+          if (contentType && contentType.includes('application/json')) {
+            const responseData = await response.json();
+            console.log('Resposta JSON:', responseData);
+            
+            // Tenta diferentes campos para a resposta
+            aiText = responseData.message || 
+                     responseData.response || 
+                     responseData.text || 
+                     responseData.reply || 
+                     responseData.data?.message ||
+                     responseData.data?.response ||
+                     'Resposta recebida mas formato não reconhecido.';
+          } else {
+            aiText = await response.text();
+            console.log('Resposta em texto:', aiText);
+          }
+        } catch (parseError) {
+          console.error('Erro ao parsear resposta:', parseError);
+          aiText = 'Erro ao processar resposta do agente.';
         }
       } else {
-        console.error('Webhook failed with status:', response.status);
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
+        console.error('=== ERRO NO WEBHOOK ===');
+        console.error('Status:', response.status);
+        console.error('Status Text:', response.statusText);
+        
+        try {
+          const errorText = await response.text();
+          console.error('Erro detalhado:', errorText);
+          aiText = `Erro ${response.status}: ${response.statusText}`;
+        } catch (e) {
+          console.error('Erro ao ler resposta de erro:', e);
+        }
       }
+      
+      console.log('=== RESPOSTA FINAL DO AGENTE ===');
+      console.log('Texto:', aiText);
       
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -127,19 +163,25 @@ const SessionPage = () => {
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiMessage]);
+      
     } catch (error) {
-      console.error('Erro ao chamar webhook:', error);
+      console.error('=== ERRO DE REDE/CONEXÃO ===');
+      console.error('Erro completo:', error);
+      console.error('Nome do erro:', error instanceof Error ? error.name : 'Desconhecido');
+      console.error('Mensagem do erro:', error instanceof Error ? error.message : String(error));
+      
       setMessages(prev => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
-          text: 'Erro de conexão com o servidor. Tente novamente.',
+          text: 'Erro de conexão com o servidor. Verifique sua internet e tente novamente.',
           isUser: false,
           timestamp: new Date(),
         },
       ]);
     } finally {
       setIsLoading(false);
+      console.log('=== WEBHOOK FINALIZADO ===');
     }
   };
 
