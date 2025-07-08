@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -25,6 +26,8 @@ const SessionPage = () => {
   const [inputText, setInputText] = useState('');
   const [isSessionActive, setIsSessionActive] = useState(true);
   const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const webhookUrl = 'https://n8n.rcdigitais.com.br/webhook-test/Integrarmente-saas';
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -35,8 +38,9 @@ const SessionPage = () => {
     scrollToBottom();
   }, [messages]);
 
-  const handleSendMessage = () => {
-    if (!inputText.trim()) return;
+  const handleSendMessage = async () => {
+    if (!inputText.trim() || isLoading) return;
+    setIsLoading(true);
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -48,16 +52,38 @@ const SessionPage = () => {
     setMessages(prev => [...prev, newMessage]);
     setInputText('');
 
-    // Simulate AI response after a short delay
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'Entendo. Pode me contar mais sobre isso? O que você sente quando isso acontece?',
-        isUser: false,
-        timestamp: new Date()
+    try {
+      const payload = {
+        text: inputText,
+        timestamp: new Date().toISOString(),
+        history: messages.map(msg => ({ text: msg.text, isUser: msg.isUser })),
       };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1500);
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const aiText = response.ok ? await response.text() : 'Desculpe, houve um erro ao obter resposta.';
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: aiText,
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          text: 'Erro de conexão. Tente novamente.',
+          isUser: false,
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEndSession = () => {
@@ -128,6 +154,7 @@ const SessionPage = () => {
                       onKeyPress={handleKeyPress}
                       placeholder="Digite aqui ou fale comigo quando quiser…"
                       className="pr-20 py-3 rounded-2xl border-gray-200 focus:border-blue-300 focus:ring-blue-200"
+                      disabled={isLoading}
                     />
                     <Button
                       onClick={() => setIsVoiceMode(!isVoiceMode)}
@@ -143,6 +170,7 @@ const SessionPage = () => {
                   <Button
                     onClick={handleSendMessage}
                     className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white rounded-2xl px-6 py-3"
+                    disabled={isLoading}
                   >
                     <Send className="h-4 w-4" />
                   </Button>
