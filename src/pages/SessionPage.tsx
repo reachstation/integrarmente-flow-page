@@ -37,7 +37,7 @@ const SessionPage = () => {
   ]);
   const [inputText, setInputText] = useState('');
   const [isSessionActive, setIsSessionActive] = useState(true);
-  const webhookUrl = 'https://n8n.rcdigitais.com.br/webhook-test/Integrarmente-saas';
+  const webhookUrl = 'https://n8n.rcdigitais.com.br/webhook/integrarmente-sessao';
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
