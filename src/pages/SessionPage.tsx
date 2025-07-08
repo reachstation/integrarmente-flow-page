@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mic, Send, Square, Pause, BookOpen, Pin, TrendingUp } from 'lucide-react';
+import { Mic, Send, Square, Pause, BookOpen, Pin, TrendingUp } from '@lucide/react';
 import GlobalNavigation from '@/components/navigation/GlobalNavigation';
 
 interface Message {
