@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +10,21 @@ interface Message {
 }
 
 const SessionPage = () => {
+  // Generate or get user ID from localStorage
+  const getUserId = () => {
+    let userId = localStorage.getItem('integrarmente_user_id');
+    if (!userId) {
+      userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('integrarmente_user_id', userId);
+    }
+    return userId;
+  };
+
+  // Generate session ID on each page load
+  const [sessionId] = useState(() => 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
+  const [userId] = useState(() => getUserId());
+  const [sessionStartTime] = useState(() => new Date().toISOString());
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -50,15 +64,27 @@ const SessionPage = () => {
 
     try {
       const payload = {
+        userId: userId,
+        sessionId: sessionId,
         text: inputText,
         timestamp: new Date().toISOString(),
-        history: messages.map(msg => ({ text: msg.text, isUser: msg.isUser })),
+        sessionStartTime: sessionStartTime,
+        messageCount: messages.length + 1,
+        history: messages.map(msg => ({ 
+          text: msg.text, 
+          isUser: msg.isUser,
+          timestamp: msg.timestamp.toISOString()
+        })),
       };
+      
+      console.log('Enviando para n8n:', payload);
+      
       const response = await fetch(webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      
       const aiText = response.ok ? await response.text() : 'Desculpe, houve um erro ao obter resposta.';
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
