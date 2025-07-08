@@ -2,10 +2,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mic, Send, Square, Pause, BookOpen, Pin, TrendingUp } from 'lucide-react';
-import GlobalNavigation from '@/components/navigation/GlobalNavigation';
 
 interface Message {
   id: string;
@@ -105,6 +101,52 @@ const SessionPage = () => {
   };
 
   return (
+    <div className="flex flex-col h-screen bg-muted">
+      <div className="flex-1 overflow-auto p-4">
+        <div className="max-w-xl mx-auto flex flex-col space-y-4">
+          {messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}
+            >
+              <div
+                className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                  msg.isUser
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-white text-black border'
+                }`}
+              >
+                {msg.text}
+              </div>
+            </div>
+          ))}
+          <div ref={messagesEndRef} />
+        </div>
+      </div>
+      <form
+        className="w-full max-w-xl mx-auto flex gap-2 p-4 bg-background"
+        onSubmit={e => {
+          e.preventDefault();
+          handleSendMessage();
+        }}
+      >
+        <Input
+          type="text"
+          placeholder="Digite sua mensagem..."
+          value={inputText}
+          onChange={e => setInputText(e.target.value)}
+          onKeyDown={handleKeyPress}
+          disabled={!isSessionActive || isLoading}
+          className="flex-1"
+        />
+        <Button
+          type="submit"
+          disabled={!inputText.trim() || isLoading || !isSessionActive}
+        >
+          {isLoading ? 'Enviando...' : 'Enviar'}
+        </Button>
+      </form>
+    </div>
   );
 };
 
